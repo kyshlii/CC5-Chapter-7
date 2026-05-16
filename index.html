@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Reviewer Game</title>
+
+<style>
+body{
+    margin:0;
+    font-family:Arial,sans-serif;
+    background:linear-gradient(135deg,#d8f3dc,#b7e4c7,#95d5b2);
+    color:#1b4332;
+}
+
+.container{
+    max-width:950px;
+    margin:30px auto;
+    background:white;
+    padding:30px;
+    border-radius:25px;
+    box-shadow:0 10px 30px rgba(0,0,0,0.2);
+}
+
+h1{
+    text-align:center;
+    color:#2d6a4f;
+    font-size:3rem;
+}
+
+.subtitle{
+    text-align:center;
+    color:#40916c;
+}
+
+input{
+    width:90%;
+    padding:15px;
+    border-radius:15px;
+    border:2px solid #95d5b2;
+    font-size:1rem;
+    display:block;
+    margin:20px auto;
+}
+
+button{
+    border:none;
+    border-radius:15px;
+    padding:14px 30px;
+    background:#2d6a4f;
+    color:white;
+    font-size:1rem;
+    cursor:pointer;
+    transition:0.3s;
+}
+
+button:hover{
+    transform:scale(1.05);
+    background:#40916c;
+}
+
+.control{
+    display:block;
+    margin:20px auto;
+}
+
+.timer{
+    text-align:center;
+    font-size:1.5rem;
+    font-weight:bold;
+    margin:15px;
+}
+
+.progress-container{
+    width:100%;
+    background:#d8f3dc;
+    border-radius:20px;
+    overflow:hidden;
+    margin:20px 0;
+}
+
+.progress-bar{
+    height:18px;
+    width:0%;
+    background:#2d6a4f;
+    transition:0.4s;
+}
+
+.question-box{
+    background:#ecfdf3;
+    border:3px solid #95d5b2;
+    border-radius:20px;
+    padding:25px;
+}
+
+.question{
+    font-size:1.4rem;
+    font-weight:bold;
+    margin-bottom:20px;
+}
+
+.answers button{
+    width:100%;
+    margin:10px 0;
+    background:#b7e4c7;
+    color:#1b4332;
+}
+
+.correct{
+    background:#2ecc71 !important;
+    color:white !important;
+}
+
+.wrong{
+    background:#e74c3c !important;
+    color:white !important;
+}
+
+.score{
+    text-align:center;
+    margin-top:20px;
+    font-size:1.3rem;
+    font-weight:bold;
+}
+
+.next-btn{
+    display:none;
+}
+
+.result{
+    text-align:center;
+    font-size:2rem;
+    color:#2d6a4f;
+}
+
+.hidden{
+    display:none;
+}
+
+iframe{
+    display:none;
+}
+</style>
+</head>
+
+<body>
+
+<iframe id="bgMusic" src="" allow="autoplay"></iframe>
+
+<div class="container">
+
+    <div id="startScreen">
+        <h1>🌿 AI Reviewer Game</h1>
+        <p class="subtitle">Artificial Intelligence Interactive Quiz</p>
+
+        <input type="text" id="playerName" placeholder="Enter your name">
+
+        <button class="control" onclick="playMusic()">Play Music 🎵</button>
+        <button class="control" onclick="startGame()">Start Game</button>
+    </div>
+
+    <div id="gameScreen" class="hidden">
+        <h1>🌿 AI Quiz</h1>
+        <p class="subtitle" id="welcomeText"></p>
+
+        <div id="timer" class="timer">Time Left: 30</div>
+
+        <div class="progress-container">
+            <div id="progressBar" class="progress-bar"></div>
+        </div>
+
+        <div class="question-box">
+            <div id="question" class="question"></div>
+            <div id="answers" class="answers"></div>
+        </div>
+
+        <div id="score" class="score">Score: 0</div>
+
+        <button id="nextBtn" class="control next-btn">Next Question</button>
+    </div>
+
+</div>
+
+<script>
+function playMusic(){
+    document.getElementById("bgMusic").src =
+    "https://www.youtube.com/embed/eGudbLdwMUY?autoplay=1&loop=1&playlist=eGudbLdwMUY&start=4";
+}
+
+let questions = [
+{
+question:"A hospital uses AI to identify diseases from X-ray images. Which AI area is used?",
+answers:[
+{text:"Computer Vision", correct:true},
+{text:"Natural Language Processing", correct:false},
+{text:"Robotics", correct:false},
+{text:"Networking", correct:false}
+]
+},
+{
+question:"What is Artificial Intelligence?",
+answers:[
+{text:"A field that creates machines that can think and learn like humans", correct:true},
+{text:"A tool only for typing documents", correct:false},
+{text:"A computer monitor", correct:false},
+{text:"A website design language", correct:false}
+]
+},
+{
+question:"AI can perform tasks that usually require ____.",
+answers:[
+{text:"Human intelligence", correct:true},
+{text:"Manual labor only", correct:false},
+{text:"Internet only", correct:false},
+{text:"Electricity only", correct:false}
+]
+},
+{
+question:"Which AI application helps banks detect suspicious transactions?",
+answers:[
+{text:"Fraud Detection", correct:true},
+{text:"Image Printing", correct:false},
+{text:"Language Styling", correct:false},
+{text:"Cable Testing", correct:false}
+]
+},
+{
+question:"Machine Learning focuses on ____.",
+answers:[
+{text:"Algorithms that learn from data", correct:true},
+{text:"Computer cleaning", correct:false},
+{text:"Cable installation", correct:false},
+{text:"Manual typing", correct:false}
+]
+},
+{
+question:"Which learning type uses labeled data?",
+answers:[
+{text:"Supervised Learning", correct:true},
+{text:"Unsupervised Learning", correct:false},
+{text:"Reinforcement Learning", correct:false},
+{text:"Manual Learning", correct:false}
+]
+},
+{
+question:"Which learning type uses unlabeled data?",
+answers:[
+{text:"Unsupervised Learning", correct:true},
+{text:"Supervised Learning", correct:false},
+{text:"Reinforcement Learning", correct:false},
+{text:"Deep Typing", correct:false}
+]
+},
+{
+question:"A robot learns through rewards and punishments. What learning type is this?",
+answers:[
+{text:"Reinforcement Learning", correct:true},
+{text:"Supervised Learning", correct:false},
+{text:"Unsupervised Learning", correct:false},
+{text:"Manual Learning", correct:false}
+]
+},
+{
+question:"What is the goal of reinforcement learning?",
+answers:[
+{text:"To maximize rewards", correct:true},
+{text:"To delete data", correct:false},
+{text:"To print reports", correct:false},
+{text:"To change colors", correct:false}
+]
+},
+{
+question:"Which system suggests products based on user behavior?",
+answers:[
+{text:"Recommender System", correct:true},
+{text:"Firewall System", correct:false},
+{text:"Printer System", correct:false},
+{text:"File System", correct:false}
+]
+},
+{
+question:"Which AI field focuses on human language?",
+answers:[
+{text:"Natural Language Processing", correct:true},
+{text:"Computer Vision", correct:false},
+{text:"Robotics", correct:false},
+{text:"Manufacturing", correct:false}
+]
+},
+{
+question:"A chatbot understands and answers customer questions. What AI field is used?",
+answers:[
+{text:"Natural Language Processing", correct:true},
+{text:"Object Detection", correct:false},
+{text:"Pose Estimation", correct:false},
+{text:"Image Classification", correct:false}
+]
+},
+{
+question:"Tokenization means ____.",
+answers:[
+{text:"Breaking text into words or phrases", correct:true},
+{text:"Deleting text", correct:false},
+{text:"Printing text", correct:false},
+{text:"Scanning images", correct:false}
+]
+},
+{
+question:"Which NLP task identifies people, organizations, and locations?",
+answers:[
+{text:"Named Entity Recognition", correct:true},
+{text:"Face Detection", correct:false},
+{text:"Object Tracking", correct:false},
+{text:"Reward Maximization", correct:false}
+]
+},
+{
+question:"A company analyzes comments as positive, negative, or neutral. What task is this?",
+answers:[
+{text:"Sentiment Analysis", correct:true},
+{text:"Object Recognition", correct:false},
+{text:"Image Segmentation", correct:false},
+{text:"Pose Estimation", correct:false}
+]
+},
+{
+question:"Why is ambiguity a challenge in NLP?",
+answers:[
+{text:"Words can have different meanings depending on context", correct:true},
+{text:"Computers cannot store text", correct:false},
+{text:"Robots cannot move", correct:false},
+{text:"Images are always blurry", correct:false}
+]
+},
+{
+question:"Computer Vision allows machines to understand ____.",
+answers:[
+{text:"Images and videos", correct:true},
+{text:"Only text", correct:false},
+{text:"Only sound", correct:false},
+{text:"Only folders", correct:false}
+]
+},
+{
+question:"A security camera detects a person entering a restricted area. Which technique is used?",
+answers:[
+{text:"Object Recognition", correct:true},
+{text:"Tokenization", correct:false},
+{text:"Translation", correct:false},
+{text:"Speech Recognition", correct:false}
+]
+},
+{
+question:"Image classification means ____.",
+answers:[
+{text:"Assigning a label or category to an image", correct:true},
+{text:"Deleting an image", correct:false},
+{text:"Printing an image", correct:false},
+{text:"Renaming a folder", correct:false}
+]
+},
+{
+question:"Why is computer vision difficult when lighting and angle change?",
+answers:[
+{text:"Visual variability affects recognition accuracy", correct:true},
+{text:"Text cannot be translated", correct:false},
+{text:"Labels are always missing", correct:false},
+{text:"Computers cannot use images", correct:false}
+]
+},
+{
+question:"Which is an ethical concern in AI?",
+answers:[
+{text:"Bias, privacy, accountability, and fairness", correct:true},
+{text:"Keyboard size", correct:false},
+{text:"Printer speed", correct:false},
+{text:"Mouse color", correct:false}
+]
+},
+{
+question:"Bias in AI can happen when ____.",
+answers:[
+{text:"Training data is biased or incomplete", correct:true},
+{text:"The monitor is bright", correct:false},
+{text:"The keyboard is old", correct:false},
+{text:"The internet is slow", correct:false}
+]
+},
+{
+question:"Why is transparency important in AI?",
+answers:[
+{text:"So users can understand how AI makes decisions", correct:true},
+{text:"So AI uses more electricity", correct:false},
+{text:"So printers work faster", correct:false},
+{text:"So robots become larger", correct:false}
+]
+},
+{
+question:"What is deep learning?",
+answers:[
+{text:"A subset of machine learning using neural networks with many layers", correct:true},
+{text:"A keyboard shortcut", correct:false},
+{text:"A cleaning process", correct:false},
+{text:"A spreadsheet formula", correct:false}
+]
+},
+{
+question:"What is overfitting?",
+answers:[
+{text:"When a model performs well on training data but poorly on new data", correct:true},
+{text:"When a computer overheats", correct:false},
+{text:"When a robot loses battery", correct:false},
+{text:"When a file is too large", correct:false}
+]
+},
+{
+question:"Why does deep learning often require GPUs?",
+answers:[
+{text:"Because it needs high computational power", correct:true},
+{text:"Because it cannot use data", correct:false},
+{text:"Because it only works offline", correct:false},
+{text:"Because it avoids mathematics", correct:false}
+]
+},
+{
+question:"Robotics combines AI, machine learning, and ____.",
+answers:[
+{text:"Engineering", correct:true},
+{text:"Cooking", correct:false},
+{text:"Typing", correct:false},
+{text:"Painting only", correct:false}
+]
+},
+{
+question:"A factory uses robots for welding, painting, and assembly. What field is this?",
+answers:[
+{text:"Robotics in manufacturing", correct:true},
+{text:"Language translation", correct:false},
+{text:"Sentiment analysis", correct:false},
+{text:"Text summarization", correct:false}
+]
+},
+{
+question:"What is model-based reinforcement learning?",
+answers:[
+{text:"It uses a model of the environment to predict action outcomes", correct:true},
+{text:"It uses no experience", correct:false},
+{text:"It uses only random clicks", correct:false},
+{text:"It is the same as supervised learning", correct:false}
+]
+},
+{
+question:"AI in business can help with ____.",
+answers:[
+{text:"Efficiency, customer service, forecasting, and decision-making", correct:true},
+{text:"Only games", correct:false},
+{text:"Only typing", correct:false},
+{text:"Only printing", correct:false}
+]
+}
+];
+
+questions.sort(() => Math.random() - 0.5);
+
+let currentQuestion = 0;
+let score = 0;
+let timeLeft = 30;
+let timer;
+let player = "";
+
+const startScreen = document.getElementById("startScreen");
+const gameScreen = document.getElementById("gameScreen");
+const questionElement = document.getElementById("question");
+const answersElement = document.getElementById("answers");
+const nextBtn = document.getElementById("nextBtn");
+const scoreElement = document.getElementById("score");
+const timerElement = document.getElementById("timer");
+const progressBar = document.getElementById("progressBar");
+const welcomeText = document.getElementById("welcomeText");
+
+function startGame(){
+    player = document.getElementById("playerName").value;
+
+    if(player.trim() === ""){
+        player = "Player";
+    }
+
+    startScreen.classList.add("hidden");
+    gameScreen.classList.remove("hidden");
+
+    welcomeText.innerText = "Good luck, " + player + "!";
+
+    showQuestion();
+}
+
+function playSound(freq,duration){
+    const audioCtx = new(window.AudioContext || window.webkitAudioContext)();
+    const oscillator = audioCtx.createOscillator();
+    const gainNode = audioCtx.createGain();
+
+    oscillator.connect(gainNode);
+    gainNode.connect(audioCtx.destination);
+
+    oscillator.type = "sine";
+    oscillator.frequency.value = freq;
+    oscillator.start();
+
+    gainNode.gain.exponentialRampToValueAtTime(
+        0.00001,
+        audioCtx.currentTime + duration / 1000
+    );
+
+    setTimeout(()=>{
+        oscillator.stop();
+    },duration);
+}
+
+function startTimer(){
+    clearInterval(timer);
+    timeLeft = 30;
+    timerElement.innerText = "Time Left: " + timeLeft;
+
+    timer = setInterval(()=>{
+        timeLeft--;
+        timerElement.innerText = "Time Left: " + timeLeft;
+
+        if(timeLeft <= 10){
+            timerElement.style.color = "#e74c3c";
+        }else{
+            timerElement.style.color = "#2d6a4f";
+        }
+
+        if(timeLeft <= 0){
+            clearInterval(timer);
+            timeUp();
+        }
+    },1000);
+}
+
+function showQuestion(){
+    resetState();
+    startTimer();
+
+    let q = questions[currentQuestion];
+
+    questionElement.innerText =
+    "Question " + (currentQuestion + 1) + " of " + questions.length + ": " + q.question;
+
+    q.answers.forEach(answer=>{
+        const button = document.createElement("button");
+        button.innerText = answer.text;
+
+        button.addEventListener("click",()=>{
+            selectAnswer(button, answer.correct);
+        });
+
+        answersElement.appendChild(button);
+    });
+
+    updateProgress();
+}
+
+function resetState(){
+    nextBtn.style.display = "none";
+    answersElement.innerHTML = "";
+}
+
+function selectAnswer(button,correct){
+    clearInterval(timer);
+
+    const buttons = answersElement.children;
+
+    Array.from(buttons).forEach(btn=>{
+        btn.disabled = true;
+    });
+
+    if(correct){
+        button.classList.add("correct");
+        score++;
+        scoreElement.innerText = "Score: " + score;
+        playSound(700,200);
+    }else{
+        button.classList.add("wrong");
+        playSound(200,300);
+
+        Array.from(buttons).forEach((btn,index)=>{
+            if(questions[currentQuestion].answers[index].correct){
+                btn.classList.add("correct");
+            }
+        });
+    }
+
+    nextBtn.style.display = "block";
+}
+
+function timeUp(){
+    const buttons = answersElement.children;
+
+    Array.from(buttons).forEach((btn,index)=>{
+        btn.disabled = true;
+
+        if(questions[currentQuestion].answers[index].correct){
+            btn.classList.add("correct");
+        }
+    });
+
+    playSound(180,400);
+    nextBtn.style.display = "block";
+}
+
+function updateProgress(){
+    let progress = ((currentQuestion) / questions.length) * 100;
+    progressBar.style.width = progress + "%";
+}
+
+nextBtn.addEventListener("click",()=>{
+    currentQuestion++;
+
+    if(currentQuestion < questions.length){
+        showQuestion();
+    }else{
+        showResult();
+    }
+});
+
+function showResult(){
+    clearInterval(timer);
+    resetState();
+
+    progressBar.style.width = "100%";
+    timerElement.style.display = "none";
+
+    let message = "";
+
+    if(score >= 25){
+        message = "Excellent, " + player + "! AI Master 🌟";
+    }else if(score >= 18){
+        message = "Good job, " + player + "! Keep reviewing 👍";
+    }else{
+        message = "Review again, " + player + " 📘";
+    }
+
+    questionElement.innerHTML = `
+        <div class="result">
+            🌿 Quiz Complete!
+            <br><br>
+            Your Score: ${score}/${questions.length}
+            <br><br>
+            ${message}
+        </div>
+    `;
+
+    nextBtn.innerText = "Play Again";
+    nextBtn.style.display = "block";
+
+    nextBtn.onclick = ()=>{
+        location.reload();
+    };
+}
+</script>
+
+</body>
+</html>
